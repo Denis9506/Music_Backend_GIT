@@ -49,8 +49,8 @@ public class ArtistService : IArtistService
     public async Task<TrackDTO> AddTrack(int artistId, AddTrackDTO track, CancellationToken cancellationToken = default)
     {
         var trackToAdd = _mapper.Map<Track>(track);
-        var artist = await _context.Artists.FindAsync(new object[]{artistId}, cancellationToken: cancellationToken);
 
+        var artist = await _context.Artists.FindAsync(new object[] { artistId }, cancellationToken);
         if (artist == null)
         {
             throw new ArgumentNullException(nameof(artist) + " is null");
@@ -58,10 +58,15 @@ public class ArtistService : IArtistService
 
         trackToAdd.Artist = artist;
 
-        trackToAdd.Genre = _context.Genres.First();
+        var genre = await _context.Genres.FindAsync(new object[] { track.GenreId }, cancellationToken);
+        if (genre == null)
+        {
+            throw new ArgumentNullException(nameof(genre) + " is null");
+        }
+        trackToAdd.Genre = genre;
+
         _context.Add(trackToAdd);
         await _context.SaveChangesAsync(cancellationToken);
-
         return _mapper.Map<TrackDTO>(trackToAdd);
     }
 

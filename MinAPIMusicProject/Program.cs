@@ -14,6 +14,7 @@ builder.Services.AddDbContext<MusicContext>(opt =>
 builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddTransient<IArtistService, ArtistService>();
+builder.Services.AddTransient<IGenreService, GenreService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -30,5 +31,6 @@ app.UseHttpsRedirection();
 
 app.AddTrackEndpoints();
 app.AddArtistEndpoints();
+app.AddGenreEndpoints();
 
 app.Run();
