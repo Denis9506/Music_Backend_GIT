@@ -23,7 +23,7 @@ public class ArtistService : IArtistService
         var artistFromDb = _context.Add(_mapper.Map<Artist>(artist));
         await _context.SaveChangesAsync(cancellationToken);
 
-        return _mapper.Map<ArtistDTO>(artistFromDb); 
+        return _mapper.Map<ArtistDTO>(artistFromDb.Entity); 
     }
     
     public async Task DeleteArtist(int id, CancellationToken cancellationToken = default)
@@ -75,7 +75,7 @@ public class ArtistService : IArtistService
         var artists = q == null ? _context.Artists : _context.Artists.Where(x => x.Name.Contains(q));
         return artists.Skip(page * size)
             .Take(size)
-            .Select(x => new ArtistDTO() { Name = x.Name })
+            .Select(x => new ArtistDTO() {Id=x.Id, Name = x.Name })
             .ToListAsync(cancellationToken);
     }
 }

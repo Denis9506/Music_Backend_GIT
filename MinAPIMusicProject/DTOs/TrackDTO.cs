@@ -1,4 +1,6 @@
-﻿namespace MinAPIMusicProject.DTOs;
+﻿using MinAPIMusicProject.Models;
+
+namespace MinAPIMusicProject.DTOs;
 
 public class TrackDTO
 {
@@ -6,4 +8,5 @@ public class TrackDTO
     public string Title { get; set; }
     public int DurationInSeconds { get; set; }
     public ArtistDTO Artist { get; set; }
+    public Genre genre { get; set; }
 }
