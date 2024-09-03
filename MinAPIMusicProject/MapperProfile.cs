@@ -11,5 +11,6 @@ public class MapperProfile : Profile
         CreateMap<Artist, ArtistDTO>().ReverseMap();
         CreateMap<Track, TrackDTO>().ReverseMap();
         CreateMap<Track, AddTrackDTO>().ReverseMap();
+        CreateMap<Playlist, PlaylistDTO>().ReverseMap();
     }
 }

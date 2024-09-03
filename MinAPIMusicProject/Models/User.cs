@@ -9,4 +9,6 @@ public class User
     public string Password { get; set; }
 
     public virtual ICollection<Playlist> Playlists { get; set; }
+    public virtual ICollection<Track> LikedTracks { get; set; }
+
 }

@@ -15,6 +15,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddTransient<IArtistService, ArtistService>();
 builder.Services.AddTransient<IGenreService, GenreService>();
+builder.Services.AddTransient<IUserService, UserService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -29,7 +30,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.AddUserEndpoints();
 app.AddTrackEndpoints();
+app.AddPlaylistEndpoints();
 app.AddArtistEndpoints();
 app.AddGenreEndpoints();
 

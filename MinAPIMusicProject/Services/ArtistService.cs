@@ -4,6 +4,7 @@ using MinAPIMusicProject.Data;
 using MinAPIMusicProject.DTOs;
 using MinAPIMusicProject.Interfaces;
 using MinAPIMusicProject.Models;
+using System.Transactions;
 
 namespace MinAPIMusicProject.Services;
 
@@ -23,18 +24,18 @@ public class ArtistService : IArtistService
         var artistFromDb = _context.Add(_mapper.Map<Artist>(artist));
         await _context.SaveChangesAsync(cancellationToken);
 
-        return _mapper.Map<ArtistDTO>(artistFromDb.Entity); 
+        return _mapper.Map<ArtistDTO>(artistFromDb);
     }
-    
+
     public async Task DeleteArtist(int id, CancellationToken cancellationToken = default)
     {
-        var artist = await _context.Artists.FindAsync(new object[]{id}, cancellationToken: cancellationToken);
+        var artist = await _context.Artists.FindAsync(new object[] { id }, cancellationToken: cancellationToken);
 
         if (artist == null)
         {
             throw new ArgumentNullException(nameof(artist) + " is null");
         }
-        
+
         _context.Remove(artist);
         await _context.SaveChangesAsync(cancellationToken);
     }
@@ -49,24 +50,30 @@ public class ArtistService : IArtistService
     public async Task<TrackDTO> AddTrack(int artistId, AddTrackDTO track, CancellationToken cancellationToken = default)
     {
         var trackToAdd = _mapper.Map<Track>(track);
-
-        var artist = await _context.Artists.FindAsync(new object[] { artistId }, cancellationToken);
-        if (artist == null)
+        using (var transaction = CreateReadCommitedTransaction())
         {
-            throw new ArgumentNullException(nameof(artist) + " is null");
+            var artist = _context.Artists.Find(new object[] { artistId });
+
+            if (artist == null)
+            {
+                throw new ArgumentNullException(nameof(artist) + " is null");
+            }
+
+            trackToAdd.Artist = artist;
+
+            trackToAdd.Genre = _context.Genres.Find(track.GenreId);
+            trackToAdd.CreatedAt = track.CreatedAt ?? DateTime.UtcNow;
+
+            if (trackToAdd.Genre == null)
+            {
+                throw new ArgumentNullException("genre is null");
+            }
+
+            _context.Add(trackToAdd);
+            _context.SaveChanges();
+            transaction.Complete();
         }
 
-        trackToAdd.Artist = artist;
-
-        var genre = await _context.Genres.FindAsync(new object[] { track.GenreId }, cancellationToken);
-        if (genre == null)
-        {
-            throw new ArgumentNullException(nameof(genre) + " is null");
-        }
-        trackToAdd.Genre = genre;
-
-        _context.Add(trackToAdd);
-        await _context.SaveChangesAsync(cancellationToken);
         return _mapper.Map<TrackDTO>(trackToAdd);
     }
 
@@ -75,7 +82,18 @@ public class ArtistService : IArtistService
         var artists = q == null ? _context.Artists : _context.Artists.Where(x => x.Name.Contains(q));
         return artists.Skip(page * size)
             .Take(size)
-            .Select(x => new ArtistDTO() {Id=x.Id, Name = x.Name })
+            .Select(x => new ArtistDTO() { Name = x.Name })
             .ToListAsync(cancellationToken);
+    }
+
+    private TransactionScope CreateReadCommitedTransaction()
+    {
+        var options = new TransactionOptions()
+        {
+            IsolationLevel = IsolationLevel.ReadCommitted,
+            Timeout = new TimeSpan(0, 0, 15, 0)
+        };
+
+        return new TransactionScope(TransactionScopeOption.Required, options);
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MinAPIMusicProject.Data;
 
@@ -11,9 +12,11 @@ using MinAPIMusicProject.Data;
 namespace MinAPIMusicProject.Migrations
 {
     [DbContext(typeof(MusicContext))]
-    partial class MusicContextModelSnapshot : ModelSnapshot
+    [Migration("20240903121056_hw2")]
+    partial class hw2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -111,6 +114,9 @@ namespace MinAPIMusicProject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ArtistId");
@@ -118,6 +124,8 @@ namespace MinAPIMusicProject.Migrations
                     b.HasIndex("GenreId");
 
                     b.HasIndex("PlaylistId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Tracks");
                 });
@@ -145,21 +153,6 @@ namespace MinAPIMusicProject.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("TrackUser", b =>
-                {
-                    b.Property<int>("LikedByUsersId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("LikedTracksId")
-                        .HasColumnType("int");
-
-                    b.HasKey("LikedByUsersId", "LikedTracksId");
-
-                    b.HasIndex("LikedTracksId");
-
-                    b.ToTable("TrackUser");
                 });
 
             modelBuilder.Entity("MinAPIMusicProject.Models.Playlist", b =>
@@ -191,24 +184,13 @@ namespace MinAPIMusicProject.Migrations
                         .WithMany("Tracks")
                         .HasForeignKey("PlaylistId");
 
+                    b.HasOne("MinAPIMusicProject.Models.User", null)
+                        .WithMany("LikedTracks")
+                        .HasForeignKey("UserId");
+
                     b.Navigation("Artist");
 
                     b.Navigation("Genre");
-                });
-
-            modelBuilder.Entity("TrackUser", b =>
-                {
-                    b.HasOne("MinAPIMusicProject.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("LikedByUsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MinAPIMusicProject.Models.Track", null)
-                        .WithMany()
-                        .HasForeignKey("LikedTracksId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("MinAPIMusicProject.Models.Artist", b =>
@@ -223,6 +205,8 @@ namespace MinAPIMusicProject.Migrations
 
             modelBuilder.Entity("MinAPIMusicProject.Models.User", b =>
                 {
+                    b.Navigation("LikedTracks");
+
                     b.Navigation("Playlists");
                 });
 #pragma warning restore 612, 618
